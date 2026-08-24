@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta name="theme-color" content="#33ff55">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="bloco">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-512.png">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bloco de Notas</title>
+    <style>
+        /* Reset e base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            padding: 16px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            background: #0a0a0a;
+            border-radius: 20px;
+            padding: 20px 16px 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.1);
+            border: 1px solid #003300;
+        }
+
+        h1 {
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #00ff0040;
+            font-weight: 400;
+            border-bottom: 1px solid #003300;
+            padding-bottom: 12px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            background: #111;
+            color: #00ff00;
+            border: 1px solid #003300;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            border-color: #00ff00;
+            box-shadow: 0 0 20px #00ff0020;
+        }
+
+        .botoes-principais {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 16px 0 12px;
+        }
+
+        .botoes-principais button {
+            flex: 1 0 calc(50% - 10px);
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            border-radius: 30px;
+            padding: 12px 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            background: #001a00;
+        }
+
+        .botoes-principais button:active {
+            transform: scale(0.96);
+            background: #00ff00;
+            color: #000;
+        }
+
+        .botoes-principais button.btn-copiar {
+            border-color: #00ccff;
+            color: #00ccff;
+        }
+
+        .botoes-principais button.btn-whatsapp {
+            border-color: #25d366;
+            color: #25d366;
+        }
+
+        .botoes-principais button.btn-salvar-sistema {
+            border-color: #ffaa00;
+            color: #ffaa00;
+        }
+
+        .separador {
+            border: none;
+            border-top: 1px solid #003300;
+            margin: 20px 0 14px;
+        }
+
+        .lista-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .lista-header h2 {
+            font-size: 18px;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .lista-header .acoes-lista {
+            display: flex;
+            gap: 8px;
+        }
+
+        .lista-header .acoes-lista button {
+            background: #1a0000;
+            color: #ff3333;
+            border: 1px solid #660000;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lista-header .acoes-lista button:active {
+            transform: scale(0.95);
+            background: #ff3333;
+            color: #000;
+        }
+
+        .lista-header .acoes-lista button.btn-apagar-todas {
+            color: #ff6666;
+            border-color: #990000;
+        }
+
+        .lista-notas {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .lista-notas::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .lista-notas::-webkit-scrollbar-track {
+            background: #001a00;
+        }
+
+        .lista-notas::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 4px;
+        }
+
+        .nota-item {
+            display: flex;
+            align-items: center;
+            background: #0d0d0d;
+            border: 1px solid #003300;
+            border-radius: 12px;
+            padding: 10px 12px;
+            transition: background 0.2s, border-color 0.2s;
+            cursor: default;
+        }
+
+        .nota-item:active {
+            background: #1a1a1a;
+        }
+
+        .nota-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #00ff00;
+            margin-right: 12px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .nota-item .nota-conteudo {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .nota-item .nota-titulo {
+            font-size: 15px;
+            font-weight: 500;
+            color: #00ff00;
+            cursor: pointer;
+            word-break: break-word;
+        }
+
+        .nota-item .nota-titulo:hover {
+            text-decoration: underline;
+            text-decoration-color: #00ff0060;
+        }
+
+        .nota-item .nota-preview {
+            font-size: 13px;
+            color: #44aa44;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+
+        .nota-item .nota-data {
+            font-size: 11px;
+            color: #226622;
+            margin-top: 2px;
+        }
+
+        .nota-item .nota-acoes {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+
+        .nota-item .nota-acoes button {
+            background: none;
+            border: none;
+            color: #226622;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nota-item .nota-acoes button:active {
+            color: #00ff00;
+            background: #003300;
+        }
+
+        .nota-item .nota-acoes button.btn-apagar-individual {
+            color: #882222;
+        }
+
+        .nota-item .nota-acoes button.btn-apagar-individual:active {
+            color: #ff4444;
+            background: #330000;
+        }
+
+        /* Modal Salvar no Sistema */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.ativo {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #0d0d0d;
+            border: 1px solid #00ff00;
+            border-radius: 24px;
+            padding: 30px 24px 24px;
+            max-width: 380px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 0 60px rgba(0, 255, 0, 0.15);
+        }
+
+        .modal-fechar {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            background: none;
+            border: none;
+            color: #00ff00;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0 6px;
+            transition: transform 0.2s;
+            line-height: 1;
+        }
+
+        .modal-fechar:active {
+            transform: rotate(90deg);
+        }
+
+        .modal-box h3 {
+            font-size: 20px;
+            font-weight: 400;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            color: #00ff00;
+        }
+
+        .modal-box label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: #44aa44;
+        }
+
+        .modal-box input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            background: #111;
+            border: 1px solid #003300;
+            border-radius: 12px;
+            color: #00ff00;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .modal-box input[type="text"]:focus {
+            border-color: #00ff00;
+        }
+
+        .modal-box .btn-salvar-arquivo {
+            width: 100%;
+            margin-top: 18px;
+            padding: 14px;
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-box .btn-salvar-arquivo:active {
+            background: #00ff00;
+            color: #000;
+        }
+
+        /* Mensagem de nenhuma nota */
+        .sem-notas {
+            text-align: center;
+            color: #226622;
+            padding: 30px 0;
+            font-style: italic;
+            font-size: 15px;
+        }
+
+        /* Responsividade */
+        @media (max-width: 400px) {
+            .botoes-principais button {
+                flex: 1 0 100%;
+            }
+
+            .modal-box {
+                padding: 24px 16px 20px;
+            }
+        }
+
+        /* Animação suave */
+        .nota-item {
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Indicador de edição */
+        .editando-indicador {
+            font-size: 13px;
+            color: #ffaa00;
+            margin-left: 8px;
+            display: none;
+        }
+
+        .editando-indicador.ativo {
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📒 Bloco de Notas</h1>
+
+        <!-- Área de texto -->
+        <textarea id="noteText" placeholder="Escreva sua nota aqui..."></textarea>
+
+        <!-- Botões principais -->
+        <div class="botoes-principais">
+            <button id="btnSalvarNota">💾 Salvar Nota</button>
+            <button id="btnCopiar" class="btn-copiar">📋 Copiar</button>
+            <button id="btnWhatsApp" class="btn-whatsapp">📲 WhatsApp</button>
+            <button id="btnSalvarSistema" class="btn-salvar-sistema">💿 Salvar no Sistema</button>
+        </div>
+
+        <hr class="separador">
+
+        <!-- Lista de notas -->
+        <div class="lista-header">
+            <h2>📄 Minhas Notas <span id="editandoIndicador" class="editando-indicador">(editando)</span></h2>
+            <div class="acoes-lista">
+                <button id="btnApagarSelecionadas">🗑️ Apagar</button>
+                <button id="btnApagarTodas" class="btn-apagar-todas">🔥 Todas</button>
+            </div>
+        </div>
+
+        <div id="listaNotas" class="lista-notas">
+            <div class="sem-notas">Nenhuma nota salva ainda.</div>
+        </div>
+    </div>
+
+    <!-- Modal Salvar no Sistema -->
+    <div id="modalSalvarSistema" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-fechar" id="modalFechar">✕</button>
+            <h3>💾 Salvar como arquivo</h3>
+            <label for="nomeArquivo">Nome do arquivo (sem extensão)</label>
+            <input type="text" id="nomeArquivo" placeholder="ex: minha_nota" value="nota">
+            <button class="btn-salvar-arquivo" id="btnSalvarArquivo">📁 Salvar no sistema</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // === Elementos DOM ===
+            const textarea = document.getElementById('noteText');
+            const listaNotas = document.getElementById('listaNotas');
+            const btnSalvarNota = document.getElementById('btnSalvarNota');
+            const btnCopiar = document.getElementById('btnCopiar');
+            const btnWhatsApp = document.getElementById('btnWhatsApp');
+            const btnSalvarSistema = document.getElementById('btnSalvarSistema');
+            const btnApagarSelecionadas = document.getElementById('btnApagarSelecionadas');
+            const btnApagarTodas = document.getElementById('btnApagarTodas');
+            const editandoIndicador = document.getElementById('editandoIndicador');
+
+            // Modal
+            const modalSalvar = document.getElementById('modalSalvarSistema');
+            const modalFechar = document.getElementById('modalFechar');
+            const nomeArquivoInput = document.getElementById('nomeArquivo');
+            const btnSalvarArquivo = document.getElementById('btnSalvarArquivo');
+
+            // === Estado ===
+            let notas = [];
+            let proximoId = 1;
+            let notaEmEdicao = null; // id da nota que está sendo editada
+
+            // === Carregar do localStorage ===
+            function carregarNotas() {
+                try {
+                    const dados = localStorage.getItem('blocoNotas');
+                    if (dados) {
+                        const parsed = JSON.parse(dados);
+                        if (Array.isArray(parsed) && parsed.length) {
+                            notas = parsed;
+                            // Atualiza próximoId
+                            const ids = notas.map(n => n.id).filter(id => typeof id === 'number');
+                            if (ids.length) {
+                                proximoId = Math.max(...ids) + 1;
+                            } else {
+                                proximoId = 1;
+                            }
+                            return;
+                        }
+                    }
+                } catch (e) { /* ignora */ }
+                // Se não houver dados, inicia com array vazio
+                notas = [];
+                proximoId = 1;
+            }
+
+            function salvarNotas() {
+                localStorage.setItem('blocoNotas', JSON.stringify(notas));
+            }
+
+            // === Renderizar lista ===
+            function renderizarLista() {
+                listaNotas.innerHTML = '';
+
+                if (notas.length === 0) {
+                    listaNotas.innerHTML = '<div class="sem-notas">Nenhuma nota salva ainda.</div>';
+                    return;
+                }
+
+                // Ordenar por data decrescente (mais recente primeiro)
+                const notasOrdenadas = [...notas].sort((a, b) => b.data - a.data);
+
+                for (const nota of notasOrdenadas) {
+                    const item = document.createElement('div');
+                    item.className = 'nota-item';
+                    item.dataset.id = nota.id;
+
+                    // Checkbox
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'checkbox-nota';
+                    checkbox.dataset.id = nota.id;
+                    item.appendChild(checkbox);
+
+                    // Conteúdo
+                    const conteudo = document.createElement('div');
+                    conteudo.className = 'nota-conteudo';
+
+                    const titulo = document.createElement('div');
+                    titulo.className = 'nota-titulo';
+                    titulo.textContent = nota.titulo || 'Sem título';
+                    titulo.title = 'Clique para editar';
+                    titulo.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        carregarNotaParaEdicao(nota.id);
+                    });
+                    conteudo.appendChild(titulo);
+
+                    // Preview do texto (primeiros 50 caracteres)
+                    const preview = document.createElement('div');
+                    preview.className = 'nota-preview';
+                    let textoPreview = nota.texto || '';
+                    textoPreview = textoPreview.replace(/\s+/g, ' ').trim();
+                    if (textoPreview.length > 60) {
+                        textoPreview = textoPreview.substring(0, 60) + '...';
+                    }
+                    preview.textContent = textoPreview || '(vazio)';
+                    conteudo.appendChild(preview);
+
+                    // Data
+                    const dataDiv = document.createElement('div');
+                    dataDiv.className = 'nota-data';
+                    const dataObj = new Date(nota.data);
+                    dataDiv.textContent = dataObj.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit' });
+                    conteudo.appendChild(dataDiv);
+
+                    item.appendChild(conteudo);
+
+                    // Ações individuais (botão apagar)
+                    const acoes = document.createElement('div');
+                    acoes.className = 'nota-acoes';
+
+                    const btnApagar = document.createElement('button');
+                    btnApagar.className = 'btn-apagar-individual';
+                    btnApagar.innerHTML = '✕';
+                    btnApagar.title = 'Apagar esta nota';
+                    btnApagar.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (confirm(`Apagar a nota "${nota.titulo || 'Sem título'}"?`)) {
+                            apagarNotaPorId(nota.id);
+                        }
+                    });
+                    acoes.appendChild(btnApagar);
+                    item.appendChild(acoes);
+
+                    listaNotas.appendChild(item);
+                }
+
+                // Se houver nota em edição, destacar na lista
+                if (notaEmEdicao !== null) {
+                    const items = listaNotas.querySelectorAll('.nota-item');
+                    for (const item of items) {
+                        if (parseInt(item.dataset.id) === notaEmEdicao) {
+                            item.style.borderColor = '#ffaa00';
+                            item.style.backgroundColor = '#1a1a00';
+                        } else {
+                            item.style.borderColor = '#003300';
+                            item.style.backgroundColor = '#0d0d0d';
+                        }
+                    }
+                }
+            }
+
+            // === Operações com notas ===
+            function adicionarNota(titulo, texto) {
+                const nota = {
+                    id: proximoId++,
+                    titulo: titulo.trim() || 'Sem título',
+                    texto: texto,
+                    data: Date.now()
+                };
+                notas.push(nota);
+                salvarNotas();
+                renderizarLista();
+                return nota;
+            }
+
+            function atualizarNota(id, titulo, texto) {
+                const index = notas.findIndex(n => n.id === id);
+                if (index === -1) return false;
+                notas[index].titulo = titulo.trim() || 'Sem título';
+                notas[index].texto = texto;
+                notas[index].data = Date.now(); // atualiza data
+                salvarNotas();
+                renderizarLista();
+                return true;
+            }
+
+            function apagarNotaPorId(id) {
+                notas = notas.filter(n => n.id !== id);
+                salvarNotas();
+                if (notaEmEdicao === id) {
+                    notaEmEdicao = null;
+                    editandoIndicador.classList.remove('ativo');
+                }
+                renderizarLista();
+                // Se a nota editada foi apagada, limpar textarea? Não, deixamos.
+            }
+
+            function apagarNotasSelecionadas() {
+                const checkboxes = document.querySelectorAll('.checkbox-nota:checked');
+                if (checkboxes.length === 0) {
+                    alert('Selecione pelo menos uma nota para apagar.');
+                    return;
+                }
+                if (!confirm(`Apagar ${checkboxes.length} nota(s) selecionada(s)?`)) return;
+
+                const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
+                notas = notas.filter(n => !ids.includes(n.id));
+                salvarNotas();
+
+                // Se a nota em edição foi apagada, limpar estado
+                if (notaEmEdicao !== null && ids.includes(notaEmEdicao)) {
+                    notaEmEdicao = null;
+                    editandoIndicador.classList.remove('ativo');
+                }
+                renderizarLista();
+            }
+
+            function apagarTodasNotas() {
+                if (notas.length === 0) {
+                    alert('Não há notas para apagar.');
+                    return;
+                }
+                if (!confirm('⚠️ Tem certeza que deseja apagar TODAS as notas? Esta ação é irreversível!')) return;
+                notas = [];
+                salvarNotas();
+                notaEmEdicao = null;
+                editandoIndicador.classList.remove('ativo');
+                renderizarLista();
+                textarea.value = '';
+            }
+
+            function carregarNotaParaEdicao(id) {
+                const nota = notas.find(n => n.id === id);
+                if (!nota) return;
+                textarea.value = nota.texto || '';
+                notaEmEdicao = id;
+                editandoIndicador.classList.add('ativo');
+                renderizarLista(); // para destacar
+                textarea.focus();
+            }
+
+            // === Ações dos botões principais ===
+            function salvarNotaAtual() {
+                const texto = textarea.value;
+                if (!texto.trim()) {
+                    alert('Escreva algo na nota antes de salvar.');
+                    return;
+                }
+
+                if (notaEmEdicao !== null) {
+                    // Atualizar nota existente
+                    const nota = notas.find(n => n.id === notaEmEdicao);
+                    if (!nota) {
+                        // Se por algum motivo a nota não existe mais, resetar
+                        notaEmEdicao = null;
+                        editandoIndicador.classList.remove('ativo');
+                        salvarNotaAtual(); // tenta como nova
+                        return;
+                    }
+                    const titulo = prompt('Editar título da nota:', nota.titulo);
+                    if (titulo === null) return; // cancelou
+                    atualizarNota(notaEmEdicao, titulo || 'Sem título', texto);
+                    notaEmEdicao = null;
+                    editandoIndicador.classList.remove('ativo');
+                } else {
+                    // Criar nova nota
+                    const titulo = prompt('Título da nota:');
+                    if (titulo === null) return; // cancelou
+                    adicionarNota(titulo || 'Sem título', texto);
+                }
+                // Limpar textarea? Opcional: podemos manter ou limpar. Vamos limpar para começar nova.
+                textarea.value = '';
+                // Se estava editando, já limpamos o estado
+            }
+
+            function copiarTexto() {
+                const texto = textarea.value;
+                if (!texto.trim()) {
+                    alert('Não há texto para copiar.');
+                    return;
+                }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(texto).then(() => {
+                        alert('Texto copiado para a área de transferência!');
+                    }).catch(() => {
+                        fallbackCopiar(texto);
+                    });
+                } else {
+                    fallbackCopiar(texto);
+                }
+            }
+
+            function fallbackCopiar(texto) {
+                const textareaTemp = document.createElement('textarea');
+                textareaTemp.value = texto;
+                document.body.appendChild(textareaTemp);
+                textareaTemp.select();
+                try {
+                    document.execCommand('copy');
+                    alert('Texto copiado!');
+                } catch (e) {
+                    alert('Erro ao copiar. Selecione o texto manualmente.');
+                }
+                document.body.removeChild(textareaTemp);
+            }
+
+            function compartilharWhatsApp() {
+                const texto = textarea.value;
+                if (!texto.trim()) {
+                    alert('Não há texto para compartilhar.');
+                    return;
+                }
+                const url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(texto);
+                window.open(url, '_blank');
+            }
+
+            function salvarNoSistema() {
+                const texto = textarea.value;
+                if (!texto.trim()) {
+                    alert('Não há texto para salvar como arquivo.');
+                    return;
+                }
+                // Abrir modal
+                nomeArquivoInput.value = 'nota';
+                modalSalvar.classList.add('ativo');
+                setTimeout(() => nomeArquivoInput.focus(), 100);
+            }
+
+            function executarDownload() {
+                const texto = textarea.value;
+                if (!texto.trim()) {
+                    alert('Não há texto para salvar.');
+                    return;
+                }
+                let nome = nomeArquivoInput.value.trim();
+                if (!nome) nome = 'nota';
+                // Garantir extensão .txt
+                if (!nome.endsWith('.txt')) nome += '.txt';
+
+                const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = nome;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                modalSalvar.classList.remove('ativo');
+            }
+
+            // === Eventos ===
+            btnSalvarNota.addEventListener('click', salvarNotaAtual);
+            btnCopiar.addEventListener('click', copiarTexto);
+            btnWhatsApp.addEventListener('click', compartilharWhatsApp);
+            btnSalvarSistema.addEventListener('click', salvarNoSistema);
+            btnApagarSelecionadas.addEventListener('click', apagarNotasSelecionadas);
+            btnApagarTodas.addEventListener('click', apagarTodasNotas);
+
+            // Modal
+            modalFechar.addEventListener('click', () => {
+                modalSalvar.classList.remove('ativo');
+            });
+            modalSalvar.addEventListener('click', (e) => {
+                if (e.target === modalSalvar) {
+                    modalSalvar.classList.remove('ativo');
+                }
+            });
+            btnSalvarArquivo.addEventListener('click', executarDownload);
+            nomeArquivoInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    executarDownload();
+                }
+                if (e.key === 'Escape') {
+                    modalSalvar.classList.remove('ativo');
+                }
+            });
+
+            // Atalho: Ctrl+Enter salva nota
+            textarea.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    salvarNotaAtual();
+                }
+            });
+
+            // Inicializar
+            carregarNotas();
+            renderizarLista();
+
+            // Se houver notas, carregar a primeira para edição? Não, apenas exibe.
+            // Se a lista estiver vazia, foco no textarea
+            if (notas.length === 0) {
+                textarea.focus();
+            }
+
+            console.log('Bloco de Notas carregado. Notas:', notas.length);
+        })();
+    </script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load', function(){navigator.serviceWorker.register('sw.js').catch(function(e){console.warn('sw falhou', e);});});}</script>
+</body>
+</html>
